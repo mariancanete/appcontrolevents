@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f0e13">
+<title>Mis Fechas RRPP</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{
+  --bg:#0f0e13; --card:#1a1920; --card2:#222129; --line:#2e2d36;
+  --text:#f4f3f7; --muted:#9a98a6; --dim:#6d6b78;
+  --accent:#c9b3ff; --accent-ink:#1a1530;
+  --green:#5ee08a; --green-bg:rgba(94,224,138,.12);
+  --amber:#f2b45a; --amber-bg:rgba(242,180,90,.14);
+  --red:#ff7a7a;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+input,select,textarea{font:inherit}
+.wrap{max-width:560px;margin:0 auto;padding:16px 16px 24px}
+h1{font-size:22px;margin:8px 0 14px}
+.hero{background:linear-gradient(135deg,#2a2145,#1a1920);border:1px solid var(--line);border-radius:18px;padding:16px 18px;margin-bottom:16px}
+.hero .lbl{color:var(--muted);font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+.hero .big{font-size:32px;font-weight:800;margin-top:4px}
+.hero .sub{color:var(--muted);font-size:14px;margin-top:2px}
+
+/* Tarjeta tipo ticket */
+.ev{background:var(--card);border:1px solid var(--line);border-radius:18px;margin-bottom:16px;position:relative;overflow:hidden}
+.ev-top{display:flex;gap:16px;padding:18px 18px 16px;align-items:center;width:100%;text-align:left}
+.ev-date{min-width:46px;text-align:center;border-right:1px solid var(--line);padding-right:16px}
+.ev-date .d{font-size:30px;font-weight:800;line-height:1}
+.ev-date .m{color:var(--muted);font-size:12px;letter-spacing:.12em;font-weight:600;margin-top:4px}
+.ev-venue{color:var(--muted);font-size:12px;letter-spacing:.08em;font-weight:700;text-transform:uppercase}
+.ev-name{font-size:18px;font-weight:700;margin:2px 0}
+.ev-meta{color:var(--muted);font-size:14px}
+.ev-cut{border-top:1px dashed var(--line);position:relative}
+.ev-cut:before,.ev-cut:after{content:"";position:absolute;top:-8px;width:16px;height:16px;border-radius:50%;background:var(--bg);border:1px solid var(--line)}
+.ev-cut:before{left:-9px}.ev-cut:after{right:-9px}
+.ev-bot{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 18px 18px}
+.row{display:flex;align-items:center;gap:10px}
+.lbl{color:var(--muted);font-size:13px;letter-spacing:.08em;font-weight:700}
+.pct{border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-weight:700;font-size:14px;color:var(--muted)}
+.pct.on{border-color:var(--green);color:var(--green);background:var(--green-bg)}
+.amt{font-size:24px;font-weight:800;margin:8px 0 2px}
+.brk{color:var(--muted);font-size:13px;line-height:1.45}
+.badge{display:inline-block;margin-top:10px;padding:5px 10px;border-radius:8px;font-size:13px;font-weight:600}
+.badge.pend{background:var(--amber-bg);color:var(--amber)}
+.badge.paid{background:var(--green-bg);color:var(--green)}
+.btn-pay{background:var(--accent);color:var(--accent-ink);font-weight:700;border-radius:999px;padding:14px 18px;white-space:nowrap}
+.btn-undo{border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:10px 14px;font-size:14px;white-space:nowrap}
+.ev.is-paid .amt{color:var(--muted)}
+
+.empty{text-align:center;color:var(--muted);padding:48px 16px}
+.empty b{display:block;color:var(--text);font-size:18px;margin-bottom:6px}
+
+.chips{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto}
+.chip{border:1px solid var(--line);border-radius:999px;padding:8px 14px;color:var(--muted);font-size:14px;white-space:nowrap}
+.chip.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:700}
+.search{width:100%;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;color:var(--text);margin-bottom:12px}
+.group{color:var(--muted);font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin:18px 4px 10px}
+
+.fab{position:fixed;right:max(16px,calc(50% - 264px));bottom:calc(96px + env(safe-area-inset-bottom));width:58px;height:58px;border-radius:18px;background:var(--accent);color:var(--accent-ink);font-size:32px;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,.45);z-index:5}
+
+/* Rendimiento */
+.month-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.month-nav button{width:42px;height:42px;border-radius:12px;background:var(--card);border:1px solid var(--line);font-size:20px}
+.month-nav .t{font-size:18px;font-weight:700;text-transform:capitalize}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px}
+.tile .k{color:var(--muted);font-size:13px}
+.tile .v{font-size:22px;font-weight:800;margin-top:4px}
+.tile.wide{grid-column:1/-1}
+.tile .v.g{color:var(--green)} .tile .v.a{color:var(--amber)} .tile .v.p{color:var(--accent)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-top:16px}
+.card h3{margin:0 0 4px;font-size:16px}
+.card .hint{color:var(--muted);font-size:13px;margin-bottom:12px}
+.legend{display:flex;gap:14px;font-size:13px;color:var(--muted);margin-bottom:10px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.bars{display:flex;align-items:flex-end;gap:10px;height:150px;padding-top:6px}
+.bcol{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%}
+.bpair{flex:1;display:flex;align-items:flex-end;gap:3px;width:100%;justify-content:center}
+.bar{width:42%;max-width:18px;border-radius:4px 4px 0 0;min-height:2px}
+.bar.gen{background:var(--accent)} .bar.cob{background:var(--green)}
+.bcol .ml{font-size:12px;color:var(--muted);text-transform:capitalize}
+.bcol.cur .ml{color:var(--text);font-weight:700}
+.list-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);font-size:15px}
+.list-row:last-child{border-bottom:0}
+.list-row .s{color:var(--muted);font-size:13px}
+
+/* Ajustes */
+.set{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:4px 16px;margin-bottom:16px}
+.set-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}
+.set-row:last-child{border-bottom:0}
+.set-row .s{color:var(--muted);font-size:13px;margin-top:2px}
+.set-row input{width:110px;text-align:right}
+.btn-line{border:1px solid var(--line);border-radius:12px;padding:10px 14px;white-space:nowrap}
+.btn-danger{color:var(--red);border-color:rgba(255,122,122,.35)}
+
+/* Barra inferior */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;background:#15141a;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:8px 0 calc(8px + env(safe-area-inset-bottom));z-index:6}
+nav.tabs button{display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);font-size:13px;font-weight:600;flex:1;padding:4px 0}
+nav.tabs button.on{color:var(--green)}
+nav.tabs svg{width:24px;height:24px}
+
+/* Formulario (hoja inferior) */
+.sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:20;display:none;align-items:flex-end;justify-content:center}
+.sheet-bg.open{display:flex}
+.sheet{background:#17161c;border:1px solid var(--line);border-bottom:0;border-radius:22px 22px 0 0;width:100%;max-width:560px;max-height:92vh;overflow:auto;padding:18px 18px calc(20px + env(safe-area-inset-bottom))}
+.sheet h2{margin:4px 0 14px;font-size:20px}
+.f{margin-bottom:12px}
+.f label{display:block;color:var(--muted);font-size:13px;margin-bottom:6px;font-weight:600}
+.f input,.f textarea,.set-row input{width:100%;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px;color:var(--text)}
+.set-row input{width:120px}
+.f input:focus,.set-row input:focus{outline:2px solid var(--accent);border-color:transparent}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.preview{background:var(--card2);border-radius:12px;padding:12px;margin:6px 0 14px;font-size:14px;color:var(--muted)}
+.preview b{color:var(--text);font-size:20px;display:block;margin-top:2px}
+.check{display:flex;align-items:center;gap:10px;padding:12px;background:var(--card2);border-radius:12px;margin-bottom:12px}
+.check input{width:22px;height:22px;accent-color:var(--green)}
+.actions{display:flex;gap:10px;margin-top:6px}
+.actions .btn-pay{flex:1}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(100px + env(safe-area-inset-bottom));background:#2a2933;border:1px solid var(--line);border-radius:12px;padding:12px 16px;display:none;gap:16px;align-items:center;z-index:30;max-width:92vw}
+.toast.show{display:flex}
+.toast span{white-space:nowrap}
+.toast button{color:var(--accent);font-weight:700}
+</style>
+</head>
+<body>
+<main class="wrap" id="view"></main>
+<button class="fab" id="fab" aria-label="Agregar fecha">+</button>
+
+<nav class="tabs">
+  <button data-tab="mis" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/><path d="M9 7v2M9 11v2M9 15v2"/></svg>Mis Eventos</button>
+  <button data-tab="eventos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Eventos</button>
+  <button data-tab="rend"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 20V12M12 20V5M19 20v-9"/></svg>Rendimiento</button>
+  <button data-tab="ajustes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Ajustes</button>
+</nav>
+
+<div class="sheet-bg" id="sheetBg"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"><span id="toastMsg"></span><button id="toastBtn"></button></div>
+<input type="file" id="importFile" accept="application/json,.json" hidden>
+
+<script>
+'use strict';
+const KEY = 'rrpp.v1';
+const MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+const MESES_L = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+let db = load();
+let tab = 'mis';
+let filtro = 'todos';
+let busqueda = '';
+let mesSel = ymOf(hoy());
+
+function load(){
+  try{
+    const d = JSON.parse(localStorage.getItem(KEY));
+    if(d && Array.isArray(d.events)) return Object.assign({settings:{freeValue:1000,pct:8}}, d);
+  }catch(e){}
+  return {events:[], settings:{freeValue:1000, pct:8}};
+}
+function save(){
+  try{ localStorage.setItem(KEY, JSON.stringify(db)); }
+  catch(e){ alert('No se pudo guardar en el teléfono. Exportá un backup desde Ajustes.'); }
+}
+function hoy(){ const d=new Date(); return new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10); }
+function ymOf(s){ return s.slice(0,7); }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+const fmt = new Intl.NumberFormat('es-AR',{maximumFractionDigits:0});
+function $m(n){ return '$ '+fmt.format(Math.round(n||0)); }
+function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function num(v){ const n=parseFloat(String(v).replace(/\./g,'').replace(',','.')); return isFinite(n)?n:0; }
+
+function calc(e){
+  const comision = (e.facturado||0)*(e.pct||0)/100;
+  const frees = (e.frees||0)*(e.freeValue||0);
+  return {comision, frees, total: comision+frees};
+}
+function fechaCorta(s){ const [y,m,d]=s.split('-'); return `${d}/${m}/${y.slice(2)}`; }
+
+/* ---------- Tarjeta ---------- */
+function card(e){
+  const c = calc(e);
+  const [,m,d] = e.date.split('-');
+  return `<article class="ev ${e.paid?'is-paid':''}">
+    <button class="ev-top" data-edit="${e.id}">
+      <div class="ev-date"><div class="d">${d}</div><div class="m">${MESES[+m-1]}</div></div>
+      <div>
+        <div class="ev-venue">${esc(e.venue)||'&nbsp;'}</div>
+        <div class="ev-name">${esc(e.name)||'Sin nombre'}</div>
+        <div class="ev-meta">${fmt.format(e.tickets||0)} entradas · ${$m(e.facturado)} facturado</div>
+      </div>
+    </button>
+    <div class="ev-cut"></div>
+    <div class="ev-bot">
+      <div>
+        <div class="row"><span class="lbl">${e.paid?'COBRADO':'A COBRAR'}</span>
+          <button class="pct ${e.pct>0?'on':''}" data-pct="${e.id}">${fmt.format(e.pct||0)}% ✎</button></div>
+        <div class="amt">${$m(c.total)}</div>
+        <div class="brk">${$m(c.comision)} comisión + ${fmt.format(e.frees||0)} frees<br>${$m(c.frees)}</div>
+        ${e.paid
+          ? `<span class="badge paid">Pagado ${e.paidAt?fechaCorta(e.paidAt):''}</span>`
+          : `<span class="badge pend">Pendiente de pago</span>`}
+      </div>
+      ${e.paid
+        ? `<button class="btn-undo" data-unpay="${e.id}">Deshacer</button>`
+        : `<button class="btn-pay" data-pay="${e.id}">Marcar pagada</button>`}
+    </div>
+  </article>`;
+}
+const byDateDesc = (a,b)=> b.date.localeCompare(a.date);
+
+/* ---------- Pantallas ---------- */
+function vMis(){
+  const pend = db.events.filter(e=>!e.paid).sort(byDateDesc);
+  const total = pend.reduce((s,e)=>s+calc(e).total,0);
+  let h = `<h1>Mis Eventos</h1>
+    <div class="hero"><div class="lbl">Me deben en total</div>
+      <div class="big">${$m(total)}</div>
+      <div class="sub">${pend.length} ${pend.length===1?'fecha pendiente':'fechas pendientes'} de pago</div></div>`;
+  if(!pend.length){
+    h += db.events.length
+      ? `<div class="empty"><b>Todo cobrado 🎉</b>No tenés fechas pendientes de pago.</div>`
+      : `<div class="empty"><b>Todavía no cargaste fechas</b>Tocá el botón + para agregar tu primera fecha.</div>`;
+  } else h += pend.map(card).join('');
+  return h;
+}
+
+function vEventos(){
+  let list = db.events.slice().sort(byDateDesc);
+  if(filtro==='pend') list = list.filter(e=>!e.paid);
+  if(filtro==='pag') list = list.filter(e=>e.paid);
+  const q = busqueda.trim().toLowerCase();
+  if(q) list = list.filter(e=>(e.name+' '+e.venue).toLowerCase().includes(q));
+  let h = `<h1>Eventos</h1>
+    <input class="search" id="search" placeholder="Buscar por nombre o lugar" value="${esc(busqueda)}">
+    <div class="chips">
+      ${[['todos','Todos'],['pend','Pendientes'],['pag','Pagados']].map(([k,l])=>`<button class="chip ${filtro===k?'on':''}" data-filtro="${k}">${l}</button>`).join('')}
+    </div>`;
+  if(!list.length) return h + `<div class="empty"><b>No hay fechas</b>${db.events.length?'Probá con otro filtro.':'Tocá + para cargar una.'}</div>`;
+  let cur='';
+  for(const e of list){
+    const ym = ymOf(e.date);
+    if(ym!==cur){ cur=ym; const [y,m]=ym.split('-'); h+=`<div class="group">${MESES_L[+m-1]} ${y}</div>`; }
+    h += card(e);
+  }
+  return h;
+}
+
+function shiftYm(ym,n){ let [y,m]=ym.split('-').map(Number); m+=n; while(m<1){m+=12;y--} while(m>12){m-=12;y++} return `${y}-${String(m).padStart(2,'0')}`; }
+function statsMes(ym){
+  const ev = db.events.filter(e=>ymOf(e.date)===ym);
+  const generado = ev.reduce((s,e)=>s+calc(e).total,0);
+  const cobrado = db.events.filter(e=>e.paid && e.paidAt && ymOf(e.paidAt)===ym).reduce((s,e)=>s+calc(e).total,0);
+  const pendiente = ev.filter(e=>!e.paid).reduce((s,e)=>s+calc(e).total,0);
+  return {ev, generado, cobrado, pendiente,
+    entradas: ev.reduce((s,e)=>s+(e.tickets||0),0),
+    frees: ev.reduce((s,e)=>s+(e.frees||0),0),
+    facturado: ev.reduce((s,e)=>s+(e.facturado||0),0),
+    comision: ev.reduce((s,e)=>s+calc(e).comision,0),
+    freesM: ev.reduce((s,e)=>s+calc(e).frees,0)};
+}
+function vRend(){
+  const s = statsMes(mesSel);
+  const [y,m] = mesSel.split('-');
+  const deudaTotal = db.events.filter(e=>!e.paid).reduce((a,e)=>a+calc(e).total,0);
+  const meses = [5,4,3,2,1,0].map(i=>shiftYm(mesSel,-i));
+  const data = meses.map(ym=>({ym, ...statsMes(ym)}));
+  const max = Math.max(1,...data.map(d=>Math.max(d.generado,d.cobrado)));
+  const lugares = {};
+  s.ev.forEach(e=>{ const k=e.venue||'Sin lugar'; lugares[k]=(lugares[k]||0)+calc(e).total; });
+  const top = Object.entries(lugares).sort((a,b)=>b[1]-a[1]);
+  return `<h1>Rendimiento</h1>
+    <div class="month-nav"><button data-mes="-1" aria-label="Mes anterior">‹</button>
+      <div class="t">${MESES_L[+m-1]} ${y}</div>
+      <button data-mes="1" aria-label="Mes siguiente">›</button></div>
+    <div class="grid">
+      <div class="tile"><div class="k">Gané en el mes</div><div class="v p">${$m(s.generado)}</div></div>
+      <div class="tile"><div class="k">Me pagaron en el mes</div><div class="v g">${$m(s.cobrado)}</div></div>
+      <div class="tile"><div class="k">Pendiente del mes</div><div class="v a">${$m(s.pendiente)}</div></div>
+      <div class="tile"><div class="k">Fechas trabajadas</div><div class="v">${s.ev.length}</div></div>
+      <div class="tile"><div class="k">Entradas vendidas</div><div class="v">${fmt.format(s.entradas)}</div></div>
+      <div class="tile"><div class="k">Frees repartidos</div><div class="v">${fmt.format(s.frees)}</div></div>
+      <div class="tile wide"><div class="k">Me deben en total (todos los meses)</div><div class="v a">${$m(deudaTotal)}</div></div>
+    </div>
+    <div class="card"><h3>Últimos 6 meses</h3>
+      <div class="hint">"Gané" cuenta por fecha del evento; "Me pagaron" por fecha de pago.</div>
+      <div class="legend"><span><i style="background:var(--accent)"></i>Gané</span><span><i style="background:var(--green)"></i>Me pagaron</span></div>
+      <div class="bars">${data.map(d=>`<div class="bcol ${d.ym===mesSel?'cur':''}">
+        <div class="bpair"><div class="bar gen" style="height:${d.generado/max*100}%" title="${$m(d.generado)}"></div>
+        <div class="bar cob" style="height:${d.cobrado/max*100}%" title="${$m(d.cobrado)}"></div></div>
+        <div class="ml">${MESES[+d.ym.slice(5)-1].toLowerCase()}</div></div>`).join('')}</div>
+    </div>
+    <div class="card"><h3>Detalle del mes</h3>
+      <div class="list-row"><span>Total facturado (entradas)</span><b>${$m(s.facturado)}</b></div>
+      <div class="list-row"><span>Por comisión</span><b>${$m(s.comision)}</b></div>
+      <div class="list-row"><span>Por frees</span><b>${$m(s.freesM)}</b></div>
+    </div>
+    ${top.length?`<div class="card"><h3>Por lugar</h3>${top.map(([k,v])=>`<div class="list-row"><span>${esc(k)}</span><b>${$m(v)}</b></div>`).join('')}</div>`:''}`;
+}
+
+function vAjustes(){
+  return `<h1>Ajustes</h1>
+    <div class="set">
+      <div class="set-row"><div>Valor por free<div class="s">Se usa por defecto en fechas nuevas</div></div>
+        <input type="number" inputmode="numeric" id="sFree" value="${db.settings.freeValue}"></div>
+      <div class="set-row"><div>Comisión por defecto (%)<div class="s">Se usa por defecto en fechas nuevas</div></div>
+        <input type="number" inputmode="decimal" id="sPct" value="${db.settings.pct}"></div>
+    </div>
+    <div class="set">
+      <div class="set-row"><div>Guardar backup<div class="s">Descarga un archivo con todas tus fechas</div></div>
+        <button class="btn-line" id="exp">Exportar</button></div>
+      <div class="set-row"><div>Restaurar backup<div class="s">Reemplaza los datos por los del archivo</div></div>
+        <button class="btn-line" id="imp">Importar</button></div>
+      <div class="set-row"><div>Borrar todo<div class="s">Elimina todas las fechas de este teléfono</div></div>
+        <button class="btn-line btn-danger" id="wipe">Borrar</button></div>
+    </div>
+    <p style="color:var(--dim);font-size:13px;line-height:1.5">Los datos se guardan sólo en este teléfono. Hacé un backup de vez en cuando para no perderlos si cambiás de celular o borrás los datos del navegador.<br>${db.events.length} fechas cargadas.</p>`;
+}
+
+function render(){
+  const v = {mis:vMis, eventos:vEventos, rend:vRend, ajustes:vAjustes}[tab]();
+  document.getElementById('view').innerHTML = v;
+  document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('on', b.dataset.tab===tab));
+  document.getElementById('fab').style.display = (tab==='mis'||tab==='eventos')?'':'none';
+  const s = document.getElementById('search');
+  if(s) s.oninput = ()=>{ busqueda=s.value; const pos=s.selectionStart; render(); const n=document.getElementById('search'); n.focus(); n.setSelectionRange(pos,pos); };
+  if(tab==='ajustes') bindAjustes();
+}
+
+/* ---------- Formulario ---------- */
+function openForm(id){
+  const e = id ? db.events.find(x=>x.id===id) : {
+    date: hoy(), venue: lastVenue(), name:'', tickets:0, facturado:0, frees:0,
+    freeValue: db.settings.freeValue, pct: db.settings.pct, paid:false, paidAt:null, notes:''};
+  const sh = document.getElementById('sheet');
+  sh.innerHTML = `<h2>${id?'Editar fecha':'Nueva fecha'}</h2>
+    <form id="evForm">
+      <div class="two">
+        <div class="f"><label>Fecha</label><input type="date" name="date" required value="${e.date}"></div>
+        <div class="f"><label>Lugar / boliche</label><input name="venue" list="venues" value="${esc(e.venue)}" placeholder="The Bow / Rio"></div>
+      </div>
+      <datalist id="venues">${[...new Set(db.events.map(x=>x.venue).filter(Boolean))].map(v=>`<option value="${esc(v)}">`).join('')}</datalist>
+      <div class="f"><label>Evento / artista</label><input name="name" value="${esc(e.name)}" placeholder="Nombre del evento"></div>
+      <div class="two">
+        <div class="f"><label>Entradas vendidas</label><input type="number" inputmode="numeric" min="0" name="tickets" value="${e.tickets||''}" placeholder="0"></div>
+        <div class="f"><label>Total facturado ($)</label><input type="number" inputmode="numeric" min="0" name="facturado" value="${e.facturado||''}" placeholder="0"></div>
+      </div>
+      <div class="two">
+        <div class="f"><label>Frees repartidos</label><input type="number" inputmode="numeric" min="0" name="frees" value="${e.frees||''}" placeholder="0"></div>
+        <div class="f"><label>Valor por free ($)</label><input type="number" inputmode="numeric" min="0" name="freeValue" value="${e.freeValue}"></div>
+      </div>
+      <div class="f"><label>Comisión (%)</label><input type="number" inputmode="decimal" min="0" step="0.5" name="pct" value="${e.pct}"></div>
+      <div class="preview" id="prev"></div>
+      <label class="check"><input type="checkbox" name="paid" ${e.paid?'checked':''}> Ya me la pagaron</label>
+      <div class="f" id="paidAtWrap" style="${e.paid?'':'display:none'}"><label>Fecha de pago</label><input type="date" name="paidAt" value="${e.paidAt||hoy()}"></div>
+      <div class="f"><label>Notas</label><textarea name="notes" rows="2">${esc(e.notes)}</textarea></div>
+      <div class="actions">
+        ${id?'<button type="button" class="btn-line btn-danger" id="del">Eliminar</button>':''}
+        <button type="button" class="btn-line" id="cancel">Cancelar</button>
+        <button type="submit" class="btn-pay">Guardar</button>
+      </div>
+    </form>`;
+  const f = document.getElementById('evForm');
+  const read = ()=>({date:f.date.value, venue:f.venue.value.trim(), name:f.name.value.trim(),
+    tickets:num(f.tickets.value), facturado:num(f.facturado.value), frees:num(f.frees.value),
+    freeValue:num(f.freeValue.value), pct:num(f.pct.value), paid:f.paid.checked,
+    paidAt:f.paid.checked?(f.paidAt.value||hoy()):null, notes:f.notes.value.trim()});
+  const upd = ()=>{ const c=calc(read()); document.getElementById('prev').innerHTML=`A cobrar<b>${$m(c.total)}</b>${$m(c.comision)} comisión + ${$m(c.frees)} por frees`; };
+  f.oninput = upd; upd();
+  f.paid.onchange = ()=>{ document.getElementById('paidAtWrap').style.display=f.paid.checked?'':'none'; };
+  f.onsubmit = ev=>{
+    ev.preventDefault();
+    const data = read();
+    if(id) Object.assign(e, data); else db.events.push({id:uid(), ...data});
+    save(); closeSheet(); render(); toast(id?'Fecha actualizada':'Fecha agregada');
+  };
+  document.getElementById('cancel').onclick = closeSheet;
+  const del = document.getElementById('del');
+  if(del) del.onclick = ()=>{
+    const idx = db.events.findIndex(x=>x.id===id); const copy = db.events[idx];
+    db.events.splice(idx,1); save(); closeSheet(); render();
+    toast('Fecha eliminada','Deshacer',()=>{ db.events.push(copy); save(); render(); });
+  };
+  document.getElementById('sheetBg').classList.add('open');
+}
+function lastVenue(){ const l=db.events.slice().sort(byDateDesc)[0]; return l?l.venue:''; }
+function closeSheet(){ document.getElementById('sheetBg').classList.remove('open'); }
+
+function openPct(id){
+  const e = db.events.find(x=>x.id===id);
+  const sh = document.getElementById('sheet');
+  sh.innerHTML = `<h2>Comisión de ${esc(e.name)||'esta fecha'}</h2>
+    <form id="pctForm"><div class="f"><label>Porcentaje (%)</label>
+    <input type="number" inputmode="decimal" min="0" step="0.5" name="pct" value="${e.pct}" autofocus></div>
+    <div class="actions"><button type="button" class="btn-line" id="cancel">Cancelar</button><button class="btn-pay">Guardar</button></div></form>`;
+  const f = document.getElementById('pctForm');
+  f.onsubmit = ev=>{ ev.preventDefault(); e.pct=num(f.pct.value); save(); closeSheet(); render(); };
+  document.getElementById('cancel').onclick = closeSheet;
+  document.getElementById('sheetBg').classList.add('open');
+  setTimeout(()=>f.pct.select(),50);
+}
+
+/* ---------- Toast ---------- */
+let toastT;
+function toast(msg, btn, fn){
+  const t=document.getElementById('toast');
+  document.getElementById('toastMsg').textContent=msg;
+  const b=document.getElementById('toastBtn'); b.textContent=btn||''; b.style.display=btn?'':'none';
+  b.onclick=()=>{ t.classList.remove('show'); fn&&fn(); };
+  t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'), 4000);
+}
+
+/* ---------- Eventos de UI ---------- */
+document.addEventListener('click', ev=>{
+  const t = ev.target.closest('[data-tab],[data-edit],[data-pay],[data-unpay],[data-pct],[data-filtro],[data-mes]');
+  if(!t) return;
+  const d = t.dataset;
+  if(d.tab){ tab=d.tab; render(); scrollTo(0,0); }
+  else if(d.edit) openForm(d.edit);
+  else if(d.pct) openPct(d.pct);
+  else if(d.pay){
+    const e=db.events.find(x=>x.id===d.pay); e.paid=true; e.paidAt=hoy(); save(); render();
+    toast(`Pagada: ${$m(calc(e).total)}`,'Deshacer',()=>{ e.paid=false; e.paidAt=null; save(); render(); });
+  }
+  else if(d.unpay){
+    const e=db.events.find(x=>x.id===d.unpay); const prev=e.paidAt; e.paid=false; e.paidAt=null; save(); render();
+    toast('Vuelve a pendiente','Deshacer',()=>{ e.paid=true; e.paidAt=prev; save(); render(); });
+  }
+  else if(d.filtro){ filtro=d.filtro; render(); }
+  else if(d.mes){ mesSel=shiftYm(mesSel, +d.mes); render(); }
+});
+document.getElementById('fab').onclick = ()=>openForm(null);
+document.getElementById('sheetBg').addEventListener('click', ev=>{ if(ev.target.id==='sheetBg') closeSheet(); });
+
+function bindAjustes(){
+  const sF=document.getElementById('sFree'), sP=document.getElementById('sPct');
+  sF.onchange=()=>{ db.settings.freeValue=num(sF.value); save(); toast('Guardado'); };
+  sP.onchange=()=>{ db.settings.pct=num(sP.value); save(); toast('Guardado'); };
+  document.getElementById('exp').onclick=()=>{
+    const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`rrpp-backup-${hoy()}.json`;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  };
+  document.getElementById('imp').onclick=()=>document.getElementById('importFile').click();
+  document.getElementById('wipe').onclick=()=>{
+    if(confirm('¿Borrar todas las fechas de este teléfono? Esto no se puede deshacer.')){ db.events=[]; save(); render(); }
+  };
+}
+document.getElementById('importFile').onchange = async ev=>{
+  const file=ev.target.files[0]; if(!file) return;
+  try{
+    const d=JSON.parse(await file.text());
+    if(!Array.isArray(d.events)) throw 0;
+    if(!confirm(`Restaurar ${d.events.length} fechas? Se reemplazan los datos actuales.`)) return;
+    db={settings:Object.assign({freeValue:1000,pct:8},d.settings), events:d.events}; save(); render(); toast('Backup restaurado');
+  }catch(e){ alert('El archivo no es un backup válido.'); }
+  ev.target.value='';
+};
+
+render();
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+if(navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(()=>{});
+</script>
+</body>
+</html>
